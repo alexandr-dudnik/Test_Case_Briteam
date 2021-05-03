@@ -1,12 +1,7 @@
 package com.alexanderdudnik.briteam
 
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
-import android.view.View
 import androidx.appcompat.widget.Toolbar
-import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.get
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -14,6 +9,7 @@ import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ActivityTestRule
+import com.alexanderdudnik.briteam.ui.activities.MainActivity
 import com.alexanderdudnik.briteam.views.BarcodeListAdapter
 import junit.framework.Assert.assertEquals
 import org.junit.FixMethodOrder
@@ -33,7 +29,8 @@ import java.lang.Thread.sleep
 @RunWith(AndroidJUnit4::class)
 class InstrumentalTest1 {
     @get:Rule
-    var activityRule: ActivityTestRule<MainActivity> = ActivityTestRule(MainActivity::class.java)
+    var activityRule: ActivityTestRule<MainActivity> = ActivityTestRule(
+        MainActivity::class.java)
 
 
     @Test

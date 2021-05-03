@@ -4,7 +4,10 @@ import android.graphics.drawable.ColorDrawable;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
+import com.alexanderdudnik.briteam.App;
+import com.alexanderdudnik.briteam.data.BarcodesList;
 import com.alexanderdudnik.briteam.data.DataItem;
 import com.alexanderdudnik.briteam.models.BarcodeListModel;
 import com.alexanderdudnik.briteam.views.BarcodeListAdapter;
@@ -16,37 +19,29 @@ import io.reactivex.disposables.Disposable;
 //
 //****************************
 public class BarcodeListPresenter {
-    private final BarcodeListModel model;
     final private AppCompatActivity rootView;
-    private Disposable stream;
     private BarcodeListAdapter adapter;
+    private final BarcodeListModel mModel;
 
 
-    public BarcodeListPresenter(AppCompatActivity context) {
-        model = new BarcodeListModel();
+    public BarcodeListPresenter(AppCompatActivity context, BarcodeListAdapter pAdapter) {
         rootView = context;
+        adapter = pAdapter;
+        mModel = App.getModel();
+        mModel.addDataChangeListener(barcodesList -> {
+            adapter.setList(barcodesList);
+        });
     }
 
     //start to observe an emitter and update data in given adapter.
     public void start(BarcodeListAdapter pAdapter) {
         adapter = pAdapter;
-        if (stream == null)
-                stream = model.getEmitter()
-                        .doOnNext(item -> {
-                            if (adapter !=null){
-                                adapter.addItem(item);
-                            }
-                        })
-                        .subscribe();
+        mModel.subscribe();
     }
 
     //stops receiving data - cancel subscription
     public void stop(){
-        if (stream!=null && !stream.isDisposed()) {
-            stream.dispose();
-            stream = null;
-            adapter = null;
-        }
+        mModel.unsubscribe();
     }
 
     //handler for list-item click - used from view holder
