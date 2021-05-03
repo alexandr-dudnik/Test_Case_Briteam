@@ -6,28 +6,26 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alexanderdudnik.briteam.R;
 import com.alexanderdudnik.briteam.data.BarcodesList;
-import com.alexanderdudnik.briteam.data.DataItem;
 import com.alexanderdudnik.briteam.data.ListItem;
 import com.alexanderdudnik.briteam.extentions.DateKt;
-import com.alexanderdudnik.briteam.presenters.BarcodeListPresenter;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 //****************************
 //Adapter class for barcode list
 //
 //****************************
 public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.ViewHolder> {
-    private final BarcodesList list = new BarcodesList();
-    private final BarcodeListPresenter presenter;
+    private final List<ListItem> list = new ArrayList<>();
 
-    public BarcodeListAdapter(BarcodeListPresenter presenter) {
-        this.presenter = presenter;
-    }
 
     //create viewholder
     @NonNull
@@ -41,7 +39,7 @@ public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.
     //bind data to viewholder
     @Override
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
-        holder.bind(list.getItems().get(position));
+        holder.bind(list.get(position));
     }
 
     //get item by given position
@@ -50,38 +48,57 @@ public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.
         return position;
     }
 
-    public ListItem getItem(int id){return list.getItems().get(id);}
+    public ListItem getItem(long id){return list.get((int)id);}
 
 
-    //add new item to list
-    public void addItem(DataItem item){
-        list.addItem(item);
-        //force update of list
-        notifyDataSetChanged();
+    //set full list
+    public void setList(BarcodesList pList){
+
+        DiffUtil.DiffResult diffRes = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return list.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return pList.getItems().size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return list.get(oldItemPosition).hashCode() == pList.getItems().get(newItemPosition).hashCode();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                return list.get(oldItemPosition).equals(pList.getItems().get(newItemPosition));
+            }
+        }, true);
+
+        list.clear();
+        list.addAll(pList.getItems());
+
+        diffRes.dispatchUpdatesTo(this);
     }
+
+
 
     //get size of list
     @Override
     public int getItemCount() {
-        return list.getItems().size();
+        return list.size();
     }
 
     //Class describes viewholder
     public class ViewHolder extends RecyclerView.ViewHolder{
-        private ListItem mItem;
 
         public ViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
-
-            //set a clicklistener for created view
-            itemView.setOnClickListener(v -> presenter.handleItemClick(mItem.getData()));
-
         }
 
         //bind item to view - fill view by values
         public void bind(ListItem item){
-            //store item
-            mItem = item;
 
             //find views
             AppCompatTextView tv_barcode = this.itemView.findViewById(R.id.tv_barcode);
